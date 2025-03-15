@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:uni_links5/uni_links.dart';
 import '../class/ActividadEstilista.dart';
 import '../class/ActividadNegocio.dart';
 import '../class/CalendarioDay.dart';
@@ -65,22 +64,11 @@ class BusinessCalendarPage extends State<CalendarPageBusinessAll> {
     _fetchActivitiesAndInitializeCalendar(widget.business.userid, token!);
     _fetchActivitiesBusiness( widget.business.id,token);
 
-    // Escuchar los enlaces entrantes
-    _initUniLinks();
+
 
   }
 
-  Future<void> _initUniLinks() async {
-    // Inicializar escuchando los enlaces entrantes
-    _sub = uriLinkStream.listen((Uri? uri) {
-      if (uri != null) {
-        // Manejar la URL entrante
-        _handleIncomingLink(uri);
-      }
-    }, onError: (err) {
-      // Manejar errores de enlace
-    });
-  }
+
 
   void _handleIncomingLink(Uri uri) {
     // Obtener el estado de la transacción de la URL
