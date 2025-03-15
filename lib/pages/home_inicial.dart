@@ -1534,7 +1534,7 @@ class BusinessCalendarPage extends State<CalendarPageBusiness> {
       _fetchActivitiesAndInitializeCalendar(widget.user.userId, token!);
       _fetchActivitiesBusiness(widget.business.id, token);
 
-     
+
 
       if (session.mascotas.isEmpty) { // ✅ Solo carga mascotas si la lista está vacía
         await session.fetchMascotas(session.user!.userId);
