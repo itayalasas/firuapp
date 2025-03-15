@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "268921148731",
+    "project_id": "petapp-3b220",
+    "storage_bucket": "petapp-3b220.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:268921148731:android:1519f3622a60a5ead4131e",
+        "android_client_info": {
+          "package_name": "com.firu.pet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "268921148731-dl41vfcfd9o8psebl5l4v1rfchbi9oj4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.firu.pet",
+            "certificate_hash": "db4416c2aced84f0631fb700eb64e4ab9c693f4b"
+          }
+        },
+        {
+          "client_id": "268921148731-dvhelhe8enl0c6l9u8k7mhkpsgp0gkeu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnuQ6gDUgIugdBtRUtQLYIPEE_t3l_HKM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "268921148731-dvhelhe8enl0c6l9u8k7mhkpsgp0gkeu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
