@@ -1,8 +1,7 @@
-flutter_root = File.expand_path('..', __dir__)
-load File.join(flutter_root, '../flutter/bin/flutter_tools/podhelper.rb') if File.exist?(File.join(flutter_root, '../flutter/bin/flutter_tools/podhelper.rb'))
+flutter_root = ENV['FLUTTER_ROOT'] || File.expand_path('..', __dir__)
+load File.join(flutter_root, 'packages/flutter_tools/bin/podhelper.rb')
 
-# Uncomment the next line to define a global platform for your project
- platform :ios, '13.0'
+platform :ios, '13.0'
 
 use_frameworks!
 use_modular_headers!
@@ -10,3 +9,4 @@ use_modular_headers!
 target 'Runner' do
   install_all_flutter_pods(flutter_root)
 end
+
