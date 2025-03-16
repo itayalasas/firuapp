@@ -31,21 +31,21 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^0.13.4
-  google_fonts: ^3.0.1
-  intl: ^0.19.0
+  google_fonts: ^4.0.4
+  intl: ^0.20.2
   image_picker: ^1.1.2
   carousel_slider: ^5.0.0
   provider: ^6.1.2
   font_awesome_flutter: ^10.1.0 # Añade esta línea para Font Awesome Flutter
-  fl_chart: ^0.68.0
+  fl_chart: ^0.70.2
   uuid: ^4.4.2
   table_calendar: ^3.1.2
-  geolocator: ^10.1.0
+  geolocator: ^13.0.2
   mercadopago_sdk: ^1.3.0
   url_launcher: ^6.2.2
   flutter_local_notifications: ^18.0.1
   flutter_rating_bar: ^4.0.1
-  photo_view: ^0.14.0
+  photo_view: ^0.15.0
   printing: ^5.11.0
   #video_player: ^2.9.2
   chewie: ^1.8.5
@@ -58,18 +58,18 @@ dependencies:
   firebase_core_platform_interface: ^5.0.0
   cloud_firestore: ^5.0.0
   google_sign_in: ^6.1.5
-  share_plus: ^7.2.2
+  share_plus: ^10.1.4
   shared_preferences: ^2.2.3
   firebase_database: ^11.0.0
   firebase_performance: ^0.10.0
   firebase_storage: ^12.3.1
   googleapis_auth: ^1.4.0
-  dart_jsonwebtoken: ^2.14.1
+  dart_jsonwebtoken: ^3.2.0
   #uni_links: ^0.6.0
   json_annotation: ^4.8.1
   google_maps_flutter: ^2.10.0
   firebase_app_check: ^0.3.2+3
-  googleapis: ^9.2.0
+  googleapis: ^13.1.0
   mailer: ^6.0.1
   firebase_ml_model_downloader: ^0.3.3+2
   google_ml_kit: ^0.19.0

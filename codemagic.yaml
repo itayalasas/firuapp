@@ -5,7 +5,7 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
-      FLUTTER_ROOT: /opt/flutter # Verifica la ruta correcta en Codemagic
+      FLUTTER_ROOT: /opt/flutter
     scripts:
       - echo "🔹 Instalando Flutter..."
       - git clone https://github.com/flutter/flutter.git -b stable /opt/flutter
@@ -13,8 +13,9 @@ workflows:
       - flutter --version
       - flutter doctor -v
 
-      - echo "🔹 Limpiando dependencias..."
+      - echo "🔹 Limpiando y actualizando dependencias..."
       - flutter clean
+      - flutter pub upgrade --major-versions
       - flutter pub get
 
       - echo "🔹 Instalando CocoaPods..."

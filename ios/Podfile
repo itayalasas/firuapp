@@ -4,15 +4,19 @@ ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
 flutter_root = ENV['FLUTTER_ROOT'] || File.expand_path('..', __dir__)
 
-# Si Flutter no está bien definido, usa una ruta fija
-if !File.exist?(File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper.rb'))
-  flutter_root = '/Users/builder/programs/flutter' # Ajusta esto según el log de Codemagic
-end
-
+# Usa la ruta correcta para Flutter en Codemagic
 require File.expand_path(File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper.rb'))
 
 target 'Runner' do
   use_frameworks!
   use_modular_headers!
+
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+
+  # Forzar compatibilidad con Google ML Kit y otras dependencias
+  post_install do |installer|
+    installer.pods_project.targets.each do |target|
+      flutter_additional_ios_build_settings(target)
+    end
+  end
 end
