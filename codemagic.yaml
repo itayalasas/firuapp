@@ -5,10 +5,28 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
+      FLUTTER_ROOT: /opt/flutter # Verifica la ruta correcta en Codemagic
     scripts:
+      - echo "🔹 Instalando Flutter..."
+      - git clone https://github.com/flutter/flutter.git -b stable /opt/flutter
+      - export PATH="$PATH:/opt/flutter/bin"
+      - flutter --version
+      - flutter doctor -v
+
+      - echo "🔹 Limpiando dependencias..."
       - flutter clean
       - flutter pub get
+
+      - echo "🔹 Instalando CocoaPods..."
+      - gem install cocoapods -v 1.16.2
+      - pod repo update
+      - pod cache clean --all
+
+      - echo "🔹 Eliminando Pods antiguos y reinstalando..."
+      - rm -rf ios/Pods ios/.symlinks ios/Flutter/Flutter.framework ios/Flutter/Flutter.podspec ios/Podfile.lock
       - cd ios && pod install --verbose && cd ..
+
+      - echo "🔹 Compilando aplicación para iOS..."
       - flutter build ios --no-codesign
     artifacts:
       - build/ios/ipa/*.ipa

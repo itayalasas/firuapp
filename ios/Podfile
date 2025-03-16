@@ -1,19 +1,18 @@
-# Define la plataforma mínima
 platform :ios, '15.5'
 
-# Desactiva las estadísticas de CocoaPods para mejorar la latencia en el build.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
-# Define flutter_root usando la variable de entorno FLUTTER_ROOT o, de forma predeterminada, el directorio padre.
 flutter_root = ENV['FLUTTER_ROOT'] || File.expand_path('..', __dir__)
 
-# Carga el podhelper de Flutter que define el método flutter_install_all_ios_pods.
+# Si Flutter no está bien definido, usa una ruta fija
+if !File.exist?(File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper.rb'))
+  flutter_root = '/Users/builder/programs/flutter' # Ajusta esto según el log de Codemagic
+end
+
 require File.expand_path(File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper.rb'))
 
 target 'Runner' do
   use_frameworks!
   use_modular_headers!
-
-  # Usa el método correcto para instalar todos los pods de Flutter.
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
