@@ -21,6 +21,7 @@
 -keep class org.tensorflow.** { *; }
 -keep class org.tensorflow.lite.** { *; }
 -keep class org.tensorflow.lite.gpu.** { *; }
+-dontwarn org.tensorflow.lite.**
 
 # Suppress warnings for missing classes (from missing_rules.txt)
 -dontwarn com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions$Builder
