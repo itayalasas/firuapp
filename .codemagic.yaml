@@ -1,0 +1,14 @@
+workflows:
+  ios-build:
+    name: iOS Build
+    environment:
+      xcode: latest
+    scripts:
+      - name: "Limpiar e instalar Pods"
+        script: |
+          cd ios
+          rm -rf Pods Podfile.lock
+          pod install --repo-update --verbose
+          cd ..
+      - name: "Compilar iOS"
+        script: flutter build ios --no-codesign
