@@ -375,7 +375,7 @@ class _PetFriendlyScreenState extends State<PetFriendlyScreen> {
   }
 
 
-  // 🔹 Función para mostrar la calificación con iconos de paticas de perro 🐾
+  // 🔹 Función para mostrar la calificación con icon de paticas de perro 🐾
   Widget _buildRatingStars(double rating) {
     int fullPaws = rating.floor();
     bool hasHalfPaw = (rating - fullPaws) >= 0.5;

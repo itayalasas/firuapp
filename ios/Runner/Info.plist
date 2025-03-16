@@ -3,11 +3,11 @@
   "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <!-- Identificación básica de la app -->
+  <!-- 📌 Identificación de la App -->
   <key>CFBundleName</key>
   <string>petcare</string>
   <key>CFBundleDisplayName</key>
-  <string>Petcare</string>
+  <string>PetCare+</string>
   <key>CFBundleIdentifier</key>
   <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
   <key>CFBundleShortVersionString</key>
@@ -15,7 +15,7 @@
   <key>CFBundleVersion</key>
   <string>$(FLUTTER_BUILD_NUMBER)</string>
 
-  <!-- Configuración de interfaz -->
+  <!-- 📌 Configuración de interfaz -->
   <key>UILaunchStoryboardName</key>
   <string>LaunchScreen</string>
   <key>UIMainStoryboardFile</key>
@@ -34,38 +34,69 @@
     <string>UIInterfaceOrientationLandscapeRight</string>
   </array>
 
-  <!-- Clave de Google Maps (google_maps_flutter) -->
+  <!-- 📌 Clave de Google Maps (google_maps_flutter) -->
   <key>GMSApiKey</key>
   <string>AIzaSyBMW_wE-Fen434FQEUz-JiiLGzVqtLGJV8</string>
 
-  <!-- Permisos de uso (Usage Descriptions) -->
+  <!-- 📌 Permisos equivalentes a AndroidManifest.xml -->
 
-  <!-- Para geolocator: acceso a ubicación en primer plano -->
+  <!-- 📍 Geolocalización (geolocator) -->
   <key>NSLocationWhenInUseUsageDescription</key>
-  <string>Necesitamos acceder a tu ubicación para mostrar datos cercanos.</string>
+  <string>Se necesita acceso a tu ubicación para mostrar datos cercanos.</string>
 
-  <!-- Para image_picker / ML Kit (cámara en tiempo real) -->
+  <!-- 📸 Cámara (image_picker, ML Kit) -->
   <key>NSCameraUsageDescription</key>
-  <string>Necesitamos acceder a la cámara para tomar fotos o escanear información.</string>
+  <string>Se necesita acceso a la cámara para tomar fotos o escanear información.</string>
 
-  <!-- Para image_picker / ML Kit (si usas imágenes de la galería) -->
+  <!-- 🖼️ Galería (image_picker, ML Kit) -->
   <key>NSPhotoLibraryUsageDescription</key>
-  <string>Necesitamos acceder a tu galería para seleccionar imágenes.</string>
+  <string>Se necesita acceso a la galería para seleccionar imágenes.</string>
 
-  <!-- Si grabas video con audio (opcional) -->
+  <!-- 🎤 Micrófono (para grabación de video/audio) -->
   <key>NSMicrophoneUsageDescription</key>
-  <string>Necesitamos acceder al micrófono para grabar audio en los videos.</string>
+  <string>Se necesita acceso al micrófono para grabar audio en los videos.</string>
 
-  <!-- Face ID (ya lo tienes) -->
+  <!-- 🆔 Face ID (autenticación biométrica) -->
   <key>NSFaceIDUsageDescription</key>
-  <string>Autentificación con Face ID</string>
+  <string>Se necesita acceso a Face ID para autenticarte.</string>
 
-  <!-- Para conexiones HTTP no seguras (opcional si requieres acceso a URLs sin HTTPS) -->
+  <!-- 🔔 Notificaciones Push (Firebase Messaging) -->
+  <key>NSUserNotificationUsageDescription</key>
+  <string>Se necesita permiso para enviarte notificaciones importantes.</string>
+
+  <!-- 📡 Acceso a Internet -->
   <key>NSAppTransportSecurity</key>
   <dict>
     <key>NSAllowsArbitraryLoads</key>
     <true/>
   </dict>
+
+  <!-- 📶 Acceso al estado de red -->
+  <key>NSAllowsCellularAccess</key>
+  <true/>
+
+  <!-- 🔋 Permiso para ejecución en segundo plano -->
+  <key>UIBackgroundModes</key>
+  <array>
+    <string>fetch</string>
+    <string>processing</string>
+    <string>remote-notification</string>
+    <string>audio</string>
+  </array>
+
+  <!-- 💾 Permiso de almacenamiento -->
+  <key>LSSupportsOpeningDocumentsInPlace</key>
+  <true/>
+  <key>UIFileSharingEnabled</key>
+  <true/>
+
+  <!-- 📡 NFC (Near Field Communication) -->
+  <key>NFCReaderUsageDescription</key>
+  <string>Se necesita acceso a NFC para leer etiquetas.</string>
+
+  <!-- 🔌 Permiso para acceso a Bluetooth -->
+  <key>NSBluetoothPeripheralUsageDescription</key>
+  <string>Se necesita acceso a Bluetooth para la conectividad con dispositivos externos.</string>
 
 </dict>
 </plist>

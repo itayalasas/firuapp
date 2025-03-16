@@ -65,7 +65,7 @@ class AnimalCertificatePage extends StatelessWidget {
             final file = File('${dir.path}/cedula_animal.pdf');
             await file.writeAsBytes(pdfData);
 
-           
+
           },
           child: Text('Generar Cédula Animal'),
         ),

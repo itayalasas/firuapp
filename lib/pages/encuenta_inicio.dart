@@ -21,7 +21,7 @@ class _PerfilActividadesScreenState extends State<PerfilActividadesScreen> {
   final List<Map<String, dynamic>> _perfilesBase = [
     {'name': 'PROPIETARIO', 'image': 'lib/assets/paseador.png'},
     {'name': 'ESTILISTA', 'image': 'lib/assets/peluqueria.png'},
-    {'name': 'VETERINARIO', 'image': 'lib/assets/iconos/veterinario.png'},
+    {'name': 'VETERINARIO', 'image': 'lib/assets/icon/veterinario.png'},
     {'name': 'TIENDA', 'image': 'lib/assets/tienda.png'},
     {'name': 'PASEADOR', 'image': 'lib/assets/paseador.png'},
     {'name': 'GUARDERIA', 'image': 'lib/assets/cuidador.png'},
@@ -33,7 +33,7 @@ class _PerfilActividadesScreenState extends State<PerfilActividadesScreen> {
     'PROPIETARIO': [
       {'name': 'Perfil Mascota', 'image': 'lib/assets/inicio/calendario.png'},
       {'name': 'Calendario', 'image': 'lib/assets/inicio/calendario.png'},
-      {'name': 'Pagos Online', 'image': 'lib/assets/iconos/tarjeta-de-credito.png'},
+      {'name': 'Pagos Online', 'image': 'lib/assets/icon/tarjeta-de-credito.png'},
     ],
   };
 
@@ -60,7 +60,7 @@ class _PerfilActividadesScreenState extends State<PerfilActividadesScreen> {
       _perfiles = List.from(_perfilesBase);
       if (savedPerfiles != null) {
         for (var perfil in savedPerfiles) {
-          _perfiles.add({'name': perfil, 'image': 'lib/assets/iconos/custom.png'});
+          _perfiles.add({'name': perfil, 'image': 'lib/assets/icon/custom.png'});
         }
       }
     });
@@ -196,7 +196,7 @@ class _PerfilActividadesScreenState extends State<PerfilActividadesScreen> {
             itemBuilder: (context, index) {
               final actividad = index < actividades.length
                   ? actividades[index]
-                  : {'name': actividadesPersonalizadas[index - actividades.length], 'image': 'lib/assets/iconos/custom.png'};
+                  : {'name': actividadesPersonalizadas[index - actividades.length], 'image': 'lib/assets/icon/custom.png'};
 
               final isSelected = _actividadesSeleccionadas.contains(actividad['name']);
 
@@ -309,7 +309,7 @@ class _PerfilActividadesScreenState extends State<PerfilActividadesScreen> {
             ElevatedButton(
               onPressed: () {
                 setState(() {
-                  _perfiles.add({'name': _perfilController.text, 'image': 'lib/assets/iconos/custom.png'});
+                  _perfiles.add({'name': _perfilController.text, 'image': 'lib/assets/icon/custom.png'});
                 });
                 Navigator.pop(context);
               },
