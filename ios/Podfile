@@ -1,5 +1,5 @@
 # Define la plataforma mínima
-platform :ios, '14.0'
+platform :ios, '15.5'
 
 # Desactiva las estadísticas de CocoaPods para mejorar la latencia en el build.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
