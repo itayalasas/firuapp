@@ -1,12 +1,19 @@
-flutter_root = ENV['FLUTTER_ROOT'] || File.expand_path('..', __dir__)
-load File.join(flutter_root, 'packages/flutter_tools/bin/podhelper.rb')
-
+# Define la plataforma mínima
 platform :ios, '13.0'
 
-use_frameworks!
-use_modular_headers!
+# Desactiva las estadísticas de CocoaPods para mejorar la latencia en el build.
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+# Define flutter_root usando la variable de entorno FLUTTER_ROOT o, de forma predeterminada, el directorio padre.
+flutter_root = ENV['FLUTTER_ROOT'] || File.expand_path('..', __dir__)
+
+# Carga el podhelper de Flutter que define el método flutter_install_all_ios_pods.
+require File.expand_path(File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper.rb'))
 
 target 'Runner' do
-  install_all_flutter_pods(flutter_root)
-end
+  use_frameworks!
+  use_modular_headers!
 
+  # Usa el método correcto para instalar todos los pods de Flutter.
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+end
