@@ -1,5 +1,5 @@
-flutter_root = '/home/pedro/flutter'
-load File.join(flutter_root, 'packages/flutter_tools/bin/podhelper.rb')
+flutter_root = File.expand_path('..', __dir__)
+load File.join(flutter_root, '../flutter/bin/flutter_tools/podhelper.rb') if File.exist?(File.join(flutter_root, '../flutter/bin/flutter_tools/podhelper.rb'))
 
 # Uncomment the next line to define a global platform for your project
  platform :ios, '13.0'
