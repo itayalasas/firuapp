@@ -64,7 +64,7 @@ dependencies:
   firebase_performance: ^0.10.0
   firebase_storage: ^12.3.1
   googleapis_auth: ^1.4.0
-  dart_jsonwebtoken: ^3.2.0
+  dart_jsonwebtoken: ^2.17.0
   #uni_links: ^0.6.0
   json_annotation: ^4.8.1
   google_maps_flutter: ^2.10.0

@@ -420,7 +420,14 @@ class _AmigosPerrunosPageState extends State<AmigosPerrunosPage> with SingleTick
       }
 
       // ✅ Compartir imágenes descargadas
-      await Share.shareFiles(imagePaths, text: "📸 ¡Mira el álbum de mi mascota! 🐶🐱");
+
+      List<XFile> files = imagePaths.map((path) => XFile(path)).toList();
+
+
+      await Share.shareXFiles(
+        files,
+        text: "📸 ¡Mira el álbum de mi mascota! 🐶🐱",
+      );
 
       print("✅ Álbum compartido con fotos.");
     } catch (e) {

@@ -316,7 +316,6 @@ class CertificatePage extends StatelessWidget {
     await file.writeAsBytes(await pdf.save());
 
     // Compartir archivo a través de WhatsApp u otras aplicaciones
-    await Share.shareFiles([file.path], text: 'Aquí está el certificado de mi mascota.');
   }
 
 }

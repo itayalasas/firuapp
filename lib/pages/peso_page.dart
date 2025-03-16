@@ -185,18 +185,15 @@ class _PesoPageState extends State<PesoPage> {
                               showTitles: true,
                               reservedSize: 40,
                               getTitlesWidget: (value, meta) {
-                                int index = value.toInt();
-                                if (index < _listaPesos.length) {
-                                  return SideTitleWidget(
-                                    axisSide: meta.axisSide,
-                                    child: Text(
-                                      DateFormat('dd/MM').format(_listaPesos[index].fecha),
-                                      style: TextStyle(fontSize: 12, color: Colors.black),
-                                    ),
+                                if (value % 5 == 0 && _listaPesos.isNotEmpty) {
+                                  return Text(
+                                    '${value.toInt()} ${_listaPesos[0].um}',
+                                    style: TextStyle(fontSize: 12, color: Colors.black),
                                   );
                                 }
-                                return SizedBox.shrink();
-                              },
+                                return Container(); // ✅ Devuelve un contenedor vacío si no hay título
+                              }
+                              ,
                             ),
                           ),
                           leftTitles: AxisTitles(
@@ -205,16 +202,14 @@ class _PesoPageState extends State<PesoPage> {
                               reservedSize: 40,
                               getTitlesWidget: (value, meta) {
                                 if (value % 5 == 0 && _listaPesos.isNotEmpty) {
-                                  return SideTitleWidget(
-                                    axisSide: meta.axisSide,
-                                    child: Text(
-                                      '${value.toInt()} ${_listaPesos[0].um}',
-                                      style: TextStyle(fontSize: 12, color: Colors.black),
-                                    ),
+                                  return Text(
+                                    '${value.toInt()} ${_listaPesos[0].um}',
+                                    style: TextStyle(fontSize: 12, color: Colors.black),
                                   );
                                 }
-                                return SideTitleWidget(axisSide: meta.axisSide, child: Text(""));
-                              },
+                                return Container(); // ✅ Devuelve un contenedor vacío si no hay título
+                              }
+                              ,
                             ),
                           ),
                         ),
