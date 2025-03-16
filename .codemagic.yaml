@@ -8,7 +8,8 @@ workflows:
         script: |
           cd ios
           rm -rf Pods Podfile.lock
-          pod install --repo-update --verbose
+          pod repo update
+          pod install --verbose
           cd ..
       - name: "Compilar iOS"
         script: flutter build ios --no-codesign

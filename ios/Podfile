@@ -1,15 +1,12 @@
+flutter_root = '/home/pedro/flutter'
+load File.join(flutter_root, 'packages/flutter_tools/bin/podhelper.rb')
+
 # Uncomment the next line to define a global platform for your project
  platform :ios, '13.0'
 
+use_frameworks!
+use_modular_headers!
+
 target 'Runner' do
-  # Comment the next line if you don't want to use dynamic frameworks
-  use_frameworks!
-
-  # Pods for Runner
-
-  target 'RunnerTests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
-
+  install_all_flutter_pods(flutter_root)
 end
