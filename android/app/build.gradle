@@ -82,8 +82,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.android.play:integrity:1.4.0'
-    implementation 'com.google.android.exoplayer:exoplayer:2.20.0'
-    implementation 'com.google.android.exoplayer:extension-mediasession:2.20.0'
+    implementation 'com.google.android.exoplayer:exoplayer:2.19.1'
+    implementation 'com.google.android.exoplayer:extension-mediasession:2.19.1'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
     implementation 'com.google.mlkit:text-recognition:16.0.0'  // Add missing dependencies
     implementation 'org.tensorflow:tensorflow-lite-gpu:2.14.0'
