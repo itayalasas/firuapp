@@ -1,4 +1,33 @@
 workflows:
+  android-release:
+    name: Android Release Build
+    environment:
+      vars:
+        JAVA_VERSION: 17
+      groups:
+        - signing_credentials # Asegura que el grupo de variables de firma está activado
+      flutter: stable
+    scripts:
+      - name: Decodificar Keystore desde Base64
+        script: |
+          echo $CM_KEYSTORE | base64 --decode > /Users/builder/clone/android/petcare.jks
+
+      - name: Limpiar y actualizar dependencias
+        script: |
+          flutter clean
+          flutter pub get
+
+      - name: Compilar APK en modo release
+        script: |
+          flutter build apk --release
+
+    artifacts:
+      - build/app/outputs/flutter-apk/app-release.apk
+
+    cache:
+      cache_paths:
+        - $FLUTTER_ROOT/.pub-cache
+
   ios-build:
     name: iOS Build
     environment:
@@ -7,31 +36,39 @@ workflows:
       cocoapods: default
       FLUTTER_ROOT: /opt/flutter
     scripts:
-      - echo "🔹 Instalando Flutter..."
-      - git clone https://github.com/flutter/flutter.git -b stable /opt/flutter
-      - export PATH="$PATH:/opt/flutter/bin"
-      - flutter --version
-      - flutter doctor -v
+      - name: Instalando Flutter
+        script: |
+          git clone https://github.com/flutter/flutter.git -b stable /opt/flutter
+          export PATH="$PATH:/opt/flutter/bin"
+          flutter --version
+          flutter doctor -v
 
-      - echo "🔹 Limpiando y actualizando dependencias..."
-      - flutter clean
-      - flutter pub upgrade --major-versions
-      - flutter pub get
+      - name: Limpiando y actualizando dependencias
+        script: |
+          flutter clean
+          flutter pub upgrade --major-versions
+          flutter pub get
 
-      - echo "🔹 Instalando CocoaPods..."
-      - gem install cocoapods -v 1.16.2
-      - pod repo update
-      - pod cache clean --all
+      - name: Instalando CocoaPods
+        script: |
+          gem install cocoapods -v 1.16.2
+          pod repo update
+          pod cache clean --all
 
-      - echo "🔹 Eliminando Pods antiguos y reinstalando..."
-      - rm -rf ios/Pods ios/.symlinks ios/Flutter/Flutter.framework ios/Flutter/Flutter.podspec ios/Podfile.lock
-      - cd ios && pod install --verbose && cd ..
+      - name: Eliminando Pods antiguos y reinstalando
+        script: |
+          rm -rf ios/Pods ios/.symlinks ios/Flutter/Flutter.framework ios/Flutter/Flutter.podspec ios/Podfile.lock
+          cd ios && pod install --verbose && cd ..
 
-      - echo "🔹 Compilando aplicación para iOS..."
-      - flutter build ios --no-codesign
+      - name: Compilando aplicación para iOS
+        script: |
+          flutter build ios --no-codesign
+
     artifacts:
       - build/ios/ipa/*.ipa
+
     cache:
       cache_paths:
         - $FLUTTER_ROOT/.pub-cache
         - ios/Pods
+
