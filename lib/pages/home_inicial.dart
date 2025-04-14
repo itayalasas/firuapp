@@ -1094,8 +1094,8 @@ class _MisMascotasPageState extends State<MisMascotasPageInicio> {
                       ? null
                       : () async {
                     setStateDialog(() => isLoading = true);
-
-                    bool success = await _eliminarMascotaApi(selectedMascota.mascotaid, selectedMascota.fotos);
+                    final session = Provider.of<SessionProvider>(context, listen: false);
+                    bool success = await eliminarMascotaDesdeFirebase(session.user!.userId, selectedMascota.mascotaid, selectedMascota.fotos);
 
                     Navigator.pop(context); // Cierra el modal después de la eliminación
 
@@ -1132,6 +1132,65 @@ class _MisMascotasPageState extends State<MisMascotasPageInicio> {
     );
   }
 
+  Future<bool> eliminarMascotaDesdeFirebase(String userId, String mascotaId, String fileUrl) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+
+      // 1. Eliminar la imagen de la mascota desde Firebase Storage
+      if (await StorageService.deleteFileFromFirebase(fileUrl)) {
+        // 2. Eliminar documento mascota
+        await firestore
+            .collection('users')
+            .doc(userId)
+            .collection('mascotas')
+            .doc(mascotaId)
+            .delete();
+
+        print('✅ Mascota eliminada');
+
+        // 3. Buscar álbum asociado por mascotaId
+        final albumQuery = await firestore
+            .collection('albums')
+            .where('mascotaId', isEqualTo: mascotaId)
+            .get();
+
+        for (final albumDoc in albumQuery.docs) {
+          final albumId = albumDoc.id;
+
+          // 4. Buscar y eliminar las fotos asociadas a ese álbum
+          final photosQuery = await firestore
+              .collection('photos')
+              .where('albumId', isEqualTo: albumId)
+              .get();
+
+          for (final photoDoc in photosQuery.docs) {
+            final photoData = photoDoc.data();
+            final photoUrl = photoData['photoUrl'];
+
+            // Eliminar imagen en Firebase Storage (si querés)
+            if (photoUrl != null && photoUrl.toString().contains('firebase')) {
+              await StorageService.deleteFileFromFirebase(photoUrl);
+            }
+
+            // Eliminar documento photo
+            await firestore.collection('photos').doc(photoDoc.id).delete();
+          }
+
+          // 5. Eliminar el documento del álbum
+          await firestore.collection('albums').doc(albumId).delete();
+          print('✅ Álbum y fotos asociadas eliminadas');
+        }
+
+        return true;
+      } else {
+        print('⚠️ No se pudo eliminar la imagen de Storage.');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Error al eliminar mascota y datos relacionados: $e');
+      return false;
+    }
+  }
 
 
   Future<bool> _eliminarMascotaApi(String id, String fileUrl) async {
