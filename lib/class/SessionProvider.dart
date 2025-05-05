@@ -110,6 +110,19 @@ class SessionProvider extends  ChangeNotifier {
   }
 
 
+  // Ya tenés un getter; ahora agreguemos un método para recargarlo:
+  Future<void> reloadBusiness() async {
+    // Supongamos que tu negocio está en la colección 'businesses' y
+    // tenés el ID guardado en sesión:
+    final String negocioId = _business!.id;
+    final doc = await FirebaseFirestore.instance
+        .collection('businesses')
+        .doc(negocioId)
+        .get();
+    _business = await Business.fromFirestoreWithNegocios(doc);
+    notifyListeners();
+  }
+
   /// **📌 Método genérico para obtener subcolecciones**
   Future<List<T>> _fetchSubCollection<T>(
       String userId,

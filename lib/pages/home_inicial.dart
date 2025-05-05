@@ -50,6 +50,8 @@ import 'amigos_perruno_page.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
+import 'evaluacion_mascota.dart';
+
 
 
 class HomePageInicio extends StatefulWidget {
@@ -174,15 +176,9 @@ class _HomePageState extends State<HomePageInicio> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          // Mostrar la pantalla actual según _selectedIndex
-          Positioned.fill(
-            child: _pages[_selectedIndex],
-          ),
-
-
-        ],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -919,12 +915,13 @@ class _MisMascotasPageState extends State<MisMascotasPageInicio> {
           children: [
             _buildActionButton(Icons.vaccines, "Ver Vacunas", areButtonsEnabled, mascotas),
             _buildActionButton(Icons.monitor_weight, "Agregar Peso", areButtonsEnabled, mascotas),
+            _buildActionButton(Icons.monitor_weight, "Actualizar Perfil", areButtonsEnabled, mascotas),
             _buildActionButton(Icons.edit, "Completar Perfil", areButtonsEnabled, mascotas),
 
             // 🔹 Solo habilitar el botón "Evaluación" si la condición se cumple
-            _buildActionButton(Icons.edit, "Evaluación", isEvaluationEnabled, mascotas),
+            _buildActionButton(Icons.edit, "Evaluación", /*isEvaluationEnabled*/areButtonsEnabled, mascotas),
 
-            _buildActionButton(Icons.pets, "Recuerdos", areButtonsEnabled, mascotas),
+            _buildActionButton(Icons.pets, "Perfil", areButtonsEnabled, mascotas),
             _buildActionButton(Icons.search, "Buscar Eventos", false, mascotas),
             _buildActionButton(Icons.delete, "Eliminar", areButtonsEnabled, mascotas),
             _buildActionButton(Icons.home, "Adopción", true, mascotas),
@@ -956,7 +953,7 @@ class _MisMascotasPageState extends State<MisMascotasPageInicio> {
             MaterialPageRoute(builder: (context) => PesoPage(mascota: selectedMascota!,)),
           );
         }
-        else if (label == 'Recuerdos') {
+        else if (label == 'Perfil') {
           // Abrir la pantalla de "Recuerdos"
           Navigator.push(
             context,
@@ -982,13 +979,18 @@ class _MisMascotasPageState extends State<MisMascotasPageInicio> {
           );
         } else if (label == 'Tienda') {
           // Agregar navegación a la tienda
-        } else if (label == 'Evaluación') {
+        } /*else if (label == 'Evaluación') {
           if ( selectedMascota!.necesidadMascota!.isNotEmpty || selectedMascota!.comportamientosMascota!.isNotEmpty){
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) =>  EvaluacionMascota(mascotaId:selectedMascota!.mascotaid)),
             );
           }
+        }*/else if (label == 'Evaluación') {
+          Navigator.push(context, MaterialPageRoute(
+            builder: (_) => EvaluacionPage(mascota: selectedMascota!),
+          ));
+
         }
       }
           : null, // Si el botón está deshabilitado, no realiza ninguna acción

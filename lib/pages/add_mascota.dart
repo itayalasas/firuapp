@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -96,26 +97,38 @@ class _AgregarMascotaPageState extends State<AddMascotaPage> {
 
   // 🔹 Obtener los tamaños desde Firestore solo si aún no se han cargado
   Future<void> _fetchTamanos() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
-      QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('tamanos_mascotas')
+      // 1) Obtenemos todos los documentos de 'tipo_raza'
+      final snapshot = await FirebaseFirestore.instance
+          .collection('tipo_raza')
           .get();
 
-      List<String> tamanos = snapshot.docs
-          .map((doc) => doc['nombre'].toString())
-          .toList();
+      // 2) Extraemos el campo 'tamanio' y eliminamos duplicados con un Set
+      final tamanosSet = snapshot.docs
+          .map((doc) => doc['tamanio']?.toString() ?? '')
+          .where((t) => t.isNotEmpty)
+          .toSet();
 
+      // 3) Convertimos a lista (y opcionalmente ordenamos)
+      final List<String> tamanos = tamanosSet.toList()..sort();
+
+      // 4) Actualizamos el estado
       setState(() {
         _tamanosDisponibles = tamanos;
         _isLoading = false;
       });
     } catch (e) {
-      print("❌ Error al obtener tamaños de Firebase: $e");
+      print("❌ Error al obtener tamaños de Firestore: $e");
       setState(() {
         _isLoading = false;
       });
     }
   }
+
 
   Future<void> insertDataToFirestore() async {
     try {
@@ -189,6 +202,7 @@ class _AgregarMascotaPageState extends State<AddMascotaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,   //
       backgroundColor: Colors.grey[100],
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight), // Tamaño del AppBar estándar
@@ -521,47 +535,87 @@ class _AgregarMascotaPageState extends State<AddMascotaPage> {
 
 
 
+bool _isAgeUnknown = false;
+  final TextEditingController _ageController = TextEditingController();
+
   Widget _buildFechaNacimientoPage() {
     return _buildPage(
       title: 'Fecha de Nacimiento',
       onBack: () => _goToPage(_currentPage - 1),
-      onNext: () => _goToPage(5),
+      onNext: () {
+        final hasDate = _fechaNacimiento.isNotEmpty;
+        final hasAge = _isAgeUnknown && _edad > 0;
+        if (hasDate || hasAge) {
+          // si es necesario, convertí _edad a string o lo que uses más adelante
+          _goToPage(5);
+        } else {
+          Utiles.showErrorDialog(
+            context: context,
+            title: 'Datos incompletos',
+            content: 'Debes seleccionar una fecha o ingresar la edad (> 0).',
+          );
+        }
+      },
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(height: 20),
 
-          // Botón moderno con icono de calendario
           ElevatedButton.icon(
-            onPressed: () => _selectFechaNacimiento(context),
-            icon: Icon(Icons.calendar_today, color: Colors.white), // Icono de calendario
-            label: Text(
-              'Seleccionar Fecha de Nacimiento',
-              style: TextStyle(fontSize: 16, fontFamily: 'Poppins', color: Colors.white),
-            ),
+            onPressed: _isAgeUnknown ? null : () => _selectFechaNacimiento(context),
+            icon: Icon(Icons.calendar_today, color: Colors.white),
+            label: Text('Seleccionar Fecha de Nacimiento'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green, // Color verde menta
+              backgroundColor: Colors.green,
               padding: EdgeInsets.symmetric(vertical: 15),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
 
-          SizedBox(height: 20),
+          SizedBox(height: 10),
 
-          // Mostrar la fecha seleccionada
-          Text(
-            _fechaNacimiento.isEmpty
-                ? 'No se ha seleccionado ninguna fecha'
-                : 'Fecha seleccionada: $_fechaNacimiento',
-            style: TextStyle(fontSize: 16, fontFamily: 'Poppins'),
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text('Fecha desconocida'),
+            value: _isAgeUnknown,
+            onChanged: (val) => setState(() {
+              _isAgeUnknown = val ?? false;
+              if (_isAgeUnknown) {
+                _fechaNacimiento = '';
+                _edad = 0;
+                _ageController.clear();
+              }
+            }),
           ),
+
+          if (_isAgeUnknown) ...[
+            TextFormField(
+              controller: _ageController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: InputDecoration(
+                labelText: 'Edad de la mascota (años)',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onChanged: (val) {
+                final parsed = int.tryParse(val) ?? 0;
+                setState(() => _edad = parsed);
+              },
+            ),
+            SizedBox(height: 20),
+          ] else
+            SizedBox(height: 20),
+
+          if (!_isAgeUnknown)
+            Text(
+              _fechaNacimiento.isEmpty
+                  ? 'No se ha seleccionado ninguna fecha'
+                  : 'Fecha seleccionada: $_fechaNacimiento',
+            ),
         ],
       ),
     );
   }
-
 
 
   Widget _buildColorPage() {
@@ -827,9 +881,11 @@ class _AgregarMascotaPageState extends State<AddMascotaPage> {
     VoidCallback? onNext,
     required Widget body,
   }) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Padding(
       padding: EdgeInsets.all(20),
-      child: SingleChildScrollView( // Hace todo el contenido scrollable
+      child: SingleChildScrollView(
+        padding: EdgeInsets.only(bottom: bottomInset + 20),  // <— añade espacio extra cuando el teclado está abierto
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -851,8 +907,7 @@ class _AgregarMascotaPageState extends State<AddMascotaPage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 20),
-            body, // Sin `Expanded`, ya que `SingleChildScrollView` manejará el espacio
+            body,
             SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

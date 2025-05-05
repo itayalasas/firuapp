@@ -28,11 +28,29 @@ class _PetFriendlyScreenState extends State<PetFriendlyScreen> {
   bool _isInitialized = false;
 
 
-  @override
+  /*@override
   void initState() {
     super.initState();
     if (!_isInitialized) {
       _isInitialized = true;
+      _getCurrentLocation();
+      _fetchPlaces();
+      _scrollController.addListener(_scrollListener);
+      fetchCategories();
+    }
+  }*/
+
+
+
+
+
+  bool _hasLoaded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasLoaded) {
+      _hasLoaded = true;
       _getCurrentLocation();
       _fetchPlaces();
       _scrollController.addListener(_scrollListener);

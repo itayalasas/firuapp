@@ -118,6 +118,9 @@ class _AddServicioModalModalState extends State<AddServicioModal> {
 
       setState(() => _isLoading = false);
 
+      // Recargamos la info del negocio en el provider:
+      await session.reloadBusiness();
+
       Utiles.showConfirmationDialog(
         context: context,
         title: 'Registro exitoso',

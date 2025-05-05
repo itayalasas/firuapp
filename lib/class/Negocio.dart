@@ -80,6 +80,26 @@ class Business {
       'activity': services?.map((service) => service.toJson()).toList(),
     };
   }
+
+  /// Crea la instancia de Business y luego carga la subcolección 'negocios'
+  static Future<Business> fromFirestoreWithNegocios(DocumentSnapshot doc) async {
+    // Primero crea el Business básico
+    final business = Business.fromFirestore(doc);
+
+    // Ahora carga los documentos de la subcolección 'negocios'
+    final snapshot = await doc.reference
+        .collection('negocios')
+        .get();
+
+    // Transforma cada documento en un Negocio y lo asigna
+    business.negocios = snapshot.docs.map((d) {
+      final data = d.data() as Map<String, dynamic>;
+      return Negocio.fromFirestore(data);
+    }).toList();
+
+    return business;
+  }
+
 }
 
 class Negocio {

@@ -1,0 +1,2 @@
+C:/Proyectos/firuapp/android/app/.cxx/Debug/f2f3r3m5/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Proyectos/firuapp/android/app/.cxx/Debug/f2f3r3m5/arm64-v8a/CMakeFiles/rebuild_cache.dir

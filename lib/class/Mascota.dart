@@ -20,7 +20,7 @@ class Mascota {
   late  String? tamano;
   late  String? personalidad;
   late  String? historialMedico;
-  final String fotos;
+  String fotos;
   late  String? fechaNacimiento;
   late  List<Vacunas>? vacunas;
   late  List<PesoMascota>? peso;

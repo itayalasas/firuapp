@@ -44,7 +44,7 @@ class _ManagementPageState extends State<ManagementPage> {
 
   @override
   Widget build(BuildContext context) {
-    final sessionProvider = Provider.of<SessionProvider>(context, listen: false);
+    final sessionProvider = Provider.of<SessionProvider>(context, listen: true);
 
     // Lista de negocios, si no hay negocios, quedará vacía
     final List<Negocio> negocios = sessionProvider.business?.negocios ?? [];

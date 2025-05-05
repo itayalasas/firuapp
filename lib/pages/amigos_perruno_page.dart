@@ -25,11 +25,7 @@ import 'Utiles.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 
-import 'package:uuid/uuid.dart';
-import 'package:google_ml_kit/google_ml_kit.dart';
-import 'package:flutter/material.dart';
 
 class AmigosPerrunosPage extends StatefulWidget {
   final Mascota mascota;
@@ -54,10 +50,18 @@ class _AmigosPerrunosPageState extends State<AmigosPerrunosPage> with SingleTick
   bool isDownloading = false; // Activa el estado de carga
   double downloadProgress = 0.0; // Reinicia el progreso
 
+  /// Aquí guardaremos la lista de nombres de raza disponibles.
+  List<String> _razasDisponibles = [];
+
+  double _uploadProgress = 0.0;  // 0.0 … 100.0
+  bool   _isUploading   = false;
+
+
   @override
   void initState() {
     super.initState();
     _loadAlbumsFromDatabase();
+    _loadRazasDisponibles();  // Cargamos las razas desde Firestore
     if (context.mounted) {
       final session = Provider.of<SessionProvider>(context, listen: false);
       session.notifyListeners();
@@ -68,6 +72,25 @@ class _AmigosPerrunosPageState extends State<AmigosPerrunosPage> with SingleTick
       duration: Duration(milliseconds: 250),
     );
 
+  }
+
+  /// Consulta la colección `tipo_raza` filtrando
+  /// por la especie de la mascota y extrae el campo `nombre`.
+  Future<void> _loadRazasDisponibles() async {
+    try {
+      final especie = widget.mascota.especie;
+      final snap = await FirebaseFirestore.instance
+          .collection('tipo_raza')
+          .where('tipo', isEqualTo: especie)
+          .get();
+      final razas = snap.docs
+          .map((d) => (d.data()['nombre'] as String))
+          .toList()
+        ..sort();
+      setState(() => _razasDisponibles = razas);
+    } catch (e) {
+      print('Error cargando razas: $e');
+    }
   }
 
   @override
@@ -480,8 +503,6 @@ class _AmigosPerrunosPageState extends State<AmigosPerrunosPage> with SingleTick
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final Mascota mascota = widget.mascota;
@@ -493,13 +514,18 @@ class _AmigosPerrunosPageState extends State<AmigosPerrunosPage> with SingleTick
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: Text(
-          'Recuerdos de ${mascota.nombre}',
-          style: TextStyle(fontFamily: 'Poppins'),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: SafeArea(
+          child: AppBar(
+            title: Text(
+              'Recuerdos de ${mascota.nombre}',
+              style: TextStyle(fontFamily: 'Poppins', fontSize: 20),
+            ),
+            backgroundColor: const Color(0xFFA0E3A7),
+            elevation: 0,
+          ),
         ),
-        backgroundColor: const Color(0xFFA0E3A7),
-        elevation: 0,
       ),
       body: Stack(
         children: [
@@ -510,76 +536,126 @@ class _AmigosPerrunosPageState extends State<AmigosPerrunosPage> with SingleTick
               children: [
                 SizedBox(height: 20),
 
-                // 📌 Recuadro con los datos de la mascota
-                Container(
-                  margin: EdgeInsets.symmetric(horizontal: 16),
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFF67C8F1)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: Offset(0, 3),
+                // 📌 Tarjeta de datos con avatar + progreso + edición
+                Stack(
+                  children: [
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFF67C8F1)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // 📌 Columna de la foto
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundImage: mascota.fotos.isNotEmpty
-                            ? NetworkImage(mascota.fotos)
-                            : Utiles.getDefaultImageForSpecies(mascota.especie),
-                      ),
-                      SizedBox(width: 20), // Espacio entre la foto y la información
+                      child: Row(
+                        children: [
+                          // Avatar + loader anular
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              CircleAvatar(
+                                radius: 50,
+                                backgroundImage: mascota.fotos.isNotEmpty
+                                    ? NetworkImage(mascota.fotos)
+                                    : Utiles.getDefaultImageForSpecies(mascota.especie),
+                              ),
 
-                      // 📌 Columna de los datos
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start, // Alinear texto a la izquierda
-                          children: [
-                            Text(
-                              mascota.nombre,
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Poppins',
+                              // ← Mostramos el anillo mientras _isUploading sea true
+                              if (_isUploading)
+                                SizedBox(
+                                  width: 110,
+                                  height: 110,
+                                  child: CircularProgressIndicator(
+                                    value: _uploadProgress / 100,
+                                    strokeWidth: 6,
+                                    backgroundColor: Colors.white.withOpacity(0.6),
+                                    valueColor: AlwaysStoppedAnimation(Colors.green),
+                                  ),
+                                ),
+
+                              // Ícono de cámara
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: _updatePhoto,
+                                  child: CircleAvatar(
+                                    radius: 16,
+                                    backgroundColor: Colors.white,
+                                    child: Icon(
+                                      Icons.camera_alt,
+                                      size: 18,
+                                      color: Colors.grey[700],
+                                    ),
+                                  ),
+                                ),
                               ),
+                            ],
+                          ),
+
+                          SizedBox(width: 20),
+
+                          // Datos de la mascota
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  mascota.nombre,
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Sexo: ${mascota.genero ?? "-"}',
+                                  style: TextStyle(fontSize: 18, fontFamily: 'Poppins'),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Especie: ${mascota.especie}',
+                                  style: TextStyle(fontSize: 18, fontFamily: 'Poppins'),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Raza: ${mascota.raza}',
+                                  style: TextStyle(fontSize: 18, fontFamily: 'Poppins'),
+                                ),
+                                if (mascota.edad != null) ...[
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'Edad: ${mascota.edad}',
+                                    style: TextStyle(fontSize: 18, fontFamily: 'Poppins'),
+                                  ),
+                                ],
+                              ],
                             ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Sexo: ${mascota.genero}',
-                              style: TextStyle(fontSize: 18, fontFamily: 'Poppins'),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Especie: ${mascota.especie}',
-                              style: TextStyle(fontSize: 18, fontFamily: 'Poppins'),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Raza: ${mascota.raza}',
-                              style: TextStyle(fontSize: 18, fontFamily: 'Poppins'),
-                            ),
-                            if (mascota.edad != null) SizedBox(height: 10),
-                            if (mascota.edad != null)
-                              Text(
-                                'Edad: ${mascota.edad}',
-                                style: TextStyle(fontSize: 18, fontFamily: 'Poppins'),
-                              ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                )
-                ,
+                    ),
+                    // Botón de editar datos
+                    Positioned(
+                      right: 32,
+                      top: 8,
+                      child: IconButton(
+                        icon: Icon(Icons.edit, color: Colors.grey[700]),
+                        onPressed: _showEditPetDialog,
+                      ),
+                    ),
+                  ],
+                ),
+
                 SizedBox(height: 20),
 
                 // 📌 Mensaje de carga de álbumes
@@ -588,7 +664,11 @@ class _AmigosPerrunosPageState extends State<AmigosPerrunosPage> with SingleTick
                     padding: EdgeInsets.symmetric(vertical: 16),
                     child: Text(
                       "Cargando álbumes...",
-                      style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic, color: Colors.grey),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey,
+                      ),
                     ),
                   ),
 
@@ -607,12 +687,10 @@ class _AmigosPerrunosPageState extends State<AmigosPerrunosPage> with SingleTick
                     itemCount: albums.length,
                     itemBuilder: (context, index) {
                       final album = albums[index];
-
                       return FutureBuilder<List<Map<String, dynamic>>>(
                         future: _loadPhotosForAlbum(album.albumId),
                         builder: (context, snapshot) {
-                          final List<Map<String, dynamic>> photos = snapshot.data ?? [];
-
+                          final photos = snapshot.data ?? [];
                           return Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -630,28 +708,31 @@ class _AmigosPerrunosPageState extends State<AmigosPerrunosPage> with SingleTick
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                // 📌 Nombre del álbum
                                 Container(
                                   padding: EdgeInsets.all(8),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF67C8F1).withOpacity(0.2),
-                                    borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                                    borderRadius:
+                                    BorderRadius.vertical(top: Radius.circular(10)),
                                   ),
                                   child: Text(
                                     album.name,
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Poppins',
+                                    ),
                                   ),
                                 ),
                                 SizedBox(height: 8),
-
-                                // 📌 Grid de fotos dentro del álbum
                                 Expanded(
                                   child: GridView.builder(
                                     padding: EdgeInsets.zero,
                                     shrinkWrap: true,
                                     physics: NeverScrollableScrollPhysics(),
-                                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                    gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
                                       crossAxisCount: 3,
                                       mainAxisSpacing: 4,
                                       crossAxisSpacing: 4,
@@ -662,18 +743,18 @@ class _AmigosPerrunosPageState extends State<AmigosPerrunosPage> with SingleTick
                                       final photo = photos[photoIndex];
                                       return GestureDetector(
                                         onTap: () => _viewPhoto(photo['photoUrl']),
-                                        child: Image.network(photo['photoUrl'], fit: BoxFit.cover),
+                                        child: Image.network(photo['photoUrl'],
+                                            fit: BoxFit.cover),
                                       );
                                     },
                                   ),
                                 ),
-
-                                // 📌 Botones de acción
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                   children: [
                                     IconButton(
-                                      icon: Icon(Icons.add_a_photo, color: const Color(0xFF67C8F1)),
+                                      icon: Icon(Icons.add_a_photo,
+                                          color: const Color(0xFF67C8F1)),
                                       onPressed: () => _addPhotoToAlbum(album.albumId),
                                     ),
                                     IconButton(
@@ -681,7 +762,8 @@ class _AmigosPerrunosPageState extends State<AmigosPerrunosPage> with SingleTick
                                       onPressed: () => _deleteAlbum(album.albumId),
                                     ),
                                     IconButton(
-                                      icon: Icon(Icons.share, color: const Color(0xFF67C8F1)),
+                                      icon: Icon(Icons.share,
+                                          color: const Color(0xFF67C8F1)),
                                       onPressed: () => _shareAlbum(album.albumId),
                                     ),
                                   ],
@@ -697,22 +779,24 @@ class _AmigosPerrunosPageState extends State<AmigosPerrunosPage> with SingleTick
             ),
           ),
 
-          // 📌 Loader de progreso de carga
-          if (isUploading)
+          // 📌 Overlay de progreso global al subir fotos de álbum
+          if (_isUploading)
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(value: uploadProgress / 100, color: Colors.green),
+                  CircularProgressIndicator(
+                    value: _uploadProgress / 100,
+                    color: Colors.green,
+                  ),
                   SizedBox(height: 10),
-                  Text("Subiendo: ${uploadProgress.toStringAsFixed(0)}%"),
+                  Text("Subiendo: ${_uploadProgress.toStringAsFixed(0)}%"),
                 ],
               ),
             ),
         ],
       ),
 
-      // 📌 Botón flotante para agregar álbumes y compartir
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -723,7 +807,7 @@ class _AmigosPerrunosPageState extends State<AmigosPerrunosPage> with SingleTick
               backgroundColor: const Color(0xFF67C8F1),
               child: Icon(Icons.share, color: Colors.white),
             ),
-          SizedBox(height: 10),
+          if (isExpanded) SizedBox(height: 10),
           if (isExpanded)
             FloatingActionButton(
               heroTag: "btnCrear",
@@ -736,12 +820,211 @@ class _AmigosPerrunosPageState extends State<AmigosPerrunosPage> with SingleTick
             heroTag: "btnExpandir",
             onPressed: _toggleExpand,
             backgroundColor: const Color(0xFF67C8F1),
-            child: Icon(isExpanded ? Icons.close : Icons.menu, color: Colors.white),
+            child:
+            Icon(isExpanded ? Icons.close : Icons.menu, color: Colors.white),
           ),
         ],
       ),
     );
   }
+
+
+// 1️⃣ Lanza ImagePicker para seleccionar/capturar foto
+  Future<void> _updatePhoto() async {
+    try {
+      // 0️⃣ Antes de todo, arrancamos el loader:
+      setState(() {
+        _isUploading   = true;
+        _uploadProgress = 0.0;
+      });
+
+      // 1️⃣ Pedir nueva imagen
+      final picker = ImagePicker();
+      final XFile? pick = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 80,
+      );
+      if (pick == null) {
+        // usuario canceló: detenemos loader
+        setState(() => _isUploading = false);
+        return;
+      }
+      final file = File(pick.path);
+
+      // 2️⃣ Validar mascota
+      bool hasPet = await StorageService.containsPet(file);
+      if (!hasPet) {
+        Utiles.showErrorDialog(
+          context: context,
+          title: 'Error',
+          content: 'La imagen no contiene una mascota. Selecciona otra.',
+        );
+        setState(() => _isUploading = false);
+        return;
+      }
+
+      // 3️⃣ Borrar foto vieja (ignoramos errores)
+      final oldUrl = widget.mascota.fotos;
+      if (oldUrl.isNotEmpty) {
+        try {
+          await FirebaseStorage.instance.refFromURL(oldUrl).delete();
+        } catch (_) { /* lo ignoramos */ }
+      }
+
+      // 4️⃣ Subir la nueva y escuchar progreso
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('pet_photos/${widget.mascota.mascotaid}.jpg');
+      final uploadTask = storageRef.putFile(file);
+
+      uploadTask.snapshotEvents.listen((snap) {
+        final transferred = snap.bytesTransferred.toDouble();
+        final total       = snap.totalBytes.toDouble();
+        if (total > 0) {
+          setState(() {
+            _uploadProgress = transferred / total * 100;
+          });
+        }
+      });
+
+      final snapshot = await uploadTask;
+      final newUrl   = await snapshot.ref.getDownloadURL();
+
+      // 5️⃣ Actualizar modelo local
+      setState(() {
+        widget.mascota.fotos = newUrl;
+      });
+
+      // 6️⃣ Persistir en Firestore y provider
+      final session = Provider.of<SessionProvider>(context, listen: false);
+      final userId  = session.user?.userId;
+      if (userId != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .collection('mascotas')
+            .doc(widget.mascota.mascotaid)
+            .update({'fotos': newUrl});
+        final lista = session.user?.mascotas;
+        if (lista != null) {
+          final idx = lista.indexWhere((m) => m.mascotaid == widget.mascota.mascotaid);
+          if (idx != -1) lista[idx].fotos = newUrl;
+        }
+        session.notifyListeners();
+      }
+
+      // 7️⃣ Éxito: apagamos loader y reseteamos progreso
+      setState(() {
+        _isUploading    = false;
+        _uploadProgress = 0.0;
+      });
+      /*ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Foto actualizada correctamente')),
+      );*/
+
+    } catch (e) {
+      // en error apagamos loader
+      setState(() {
+        _isUploading    = false;
+        _uploadProgress = 0.0;
+      });
+      Utiles.showErrorDialog(
+        context: context,
+        title: "Error",
+        content: "No se pudo actualizar la foto: $e",
+      );
+    }
+  }
+
+
+
+
+
+
+// 2️⃣ Muestra un BottomSheet con un Form para editar nombre, género y raza
+  /// Ejemplo de cómo usar `_razasDisponibles` en tu BottomSheet:
+  void _showEditPetDialog() {
+    final _nameC = TextEditingController(text: widget.mascota.nombre);
+    String _gen = widget.mascota.genero ?? '';
+    String _raz = widget.mascota.raza;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => Padding(
+        padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: Wrap(children: [
+          ListTile(
+            title: Text('Editar ${widget.mascota.nombre}',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(children: [
+              // Nombre
+              TextField(
+                controller: _nameC,
+                decoration: InputDecoration(labelText: 'Nombre'),
+              ),
+              SizedBox(height: 12),
+              // Sexo
+              DropdownButtonFormField<String>(
+                value: _gen.isNotEmpty ? _gen : null,
+                items: ['Macho', 'Hembra']
+                    .map((g) =>
+                    DropdownMenuItem(value: g, child: Text(g)))
+                    .toList(),
+                onChanged: (v) => _gen = v ?? _gen,
+                decoration: InputDecoration(labelText: 'Sexo'),
+              ),
+              SizedBox(height: 12),
+              // Raza
+              DropdownButtonFormField<String>(
+                value: _razasDisponibles.contains(_raz) ? _raz : null,
+                items: _razasDisponibles
+                    .map((r) =>
+                    DropdownMenuItem(value: r, child: Text(r)))
+                    .toList(),
+                onChanged: (v) => _raz = v ?? _raz,
+                decoration: InputDecoration(labelText: 'Raza'),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  // Actualiza el modelo local
+                  setState(() {
+                    widget.mascota.nombre = _nameC.text;
+                    widget.mascota.genero = _gen;
+                    widget.mascota.raza = _raz;
+                  });
+                  // Actualiza en Firestore
+                  final session = Provider.of<SessionProvider>(
+                      context,
+                      listen: false);
+                  final userId = session.user?.userId;
+                  if (userId != null) {
+                    await FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(userId)
+                        .collection('mascotas')
+                        .doc(widget.mascota.mascotaid)
+                        .update(widget.mascota.toJson());
+                    // Refresca el provider
+                    session.notifyListeners();
+                  }
+                  Navigator.pop(context);
+                },
+                child: Text('Guardar cambios'),
+              )
+            ]),
+          ),
+        ]),
+      ),
+    );
+  }
+
 
   Future<List<Map<String, dynamic>>> _loadPhotosForAlbum(String albumId) async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -955,6 +1238,20 @@ class _AmigosPerrunosPageState extends State<AmigosPerrunosPage> with SingleTick
                         ),
                       ),
 
+                      if (_isUploading)
+                        Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(
+                                value: _uploadProgress / 100,
+                                color: Colors.green,
+                              ),
+                              SizedBox(height: 10),
+                              Text("Subiendo: ${_uploadProgress.toStringAsFixed(0)}%"),
+                            ],
+                          ),
+                        ),
                       // 🔹 Botones en la parte inferior
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),

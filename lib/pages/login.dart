@@ -61,12 +61,13 @@ class _PetLoginPageState extends State<PetLoginPage> {
   void initState() {
     super.initState();
    // _checkUserLoggedIn();
-
     _loadUserCredentials(); // Cargar credenciales guardadas
     _fetchRoles();
 
-
   }
+
+
+
 
   Future<void> updateFCMToken(String userId) async {
     FirebaseMessaging messaging = FirebaseMessaging.instance;
